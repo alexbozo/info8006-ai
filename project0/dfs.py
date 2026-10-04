@@ -15,6 +15,7 @@ def key(state):
     return (
         state.getPacmanPosition(),
         state.getFood(),
+        tuple(state.getCapsules())
     )
 
 
