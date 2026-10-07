@@ -2,11 +2,10 @@ from pacman_module.game import Agent, Directions
 import pacman_module.util
 
 class PacmanAgent(Agent):
-    """Pacman agent controlled by the arrow keys."""
+    """Pacman agent controlled by Minimax."""
 
     def __init__(self):
         super().__init__()
-        self.max_depth = 4
 
     def get_action(self, state):
         """Given a Pacman game state, returns a legal move.
@@ -15,27 +14,10 @@ class PacmanAgent(Agent):
         Returns:
             A legal move as defined in `game.Directions`.
         """
-        
-        "inf pire score pr Max et inf pire score possible pour Min"
-        _, action = self.minimax(state, set(), 0, float('-inf'), float('inf'), 0) 
-        
+        _, action = self.minimax(state, set(), 0, float('-inf'), float('inf'))
         return action
-
-    def evaluation(self, state):
-        score = state.getScore()
-        food_list = state.getFood().asList()
-        pacman_position = state.getPacmanPosition()
-        distances = []
-
-        if food_list:
-            for f in food_list : 
-                distance = pacman_module.util.manhattanDistance(pacman_position, f)
-                distances.append(distance)
-            score -= min(distances) * 0.1
-        
-        return score
-
-    def minimax(self, state, path_visited, agent_index, alpha, beta, depth):
+    
+    def minimax(self, state, path_visited, agent_index, alpha, beta):
         """Minimax algorithm for Pacman.
 
         Arguments:
@@ -47,64 +29,52 @@ class PacmanAgent(Agent):
             A tuple (score, action) where score is the minimax score and action is the
             best action for Pacman to take at this state.
         """
-
+        
         # Base case
         if state.isWin() or state.isLose():
-            "return utility"
-            return state.getScore(), Directions.STOP 
+            return state.getScore(), Directions.STOP
         
         state_key = (
             state.getPacmanPosition(),
             state.getFood(),
             tuple(state.getGhostPositions())
         )
-        
         if state_key in path_visited:
             return state.getScore(), Directions.STOP
-        
+    
         new_visited = path_visited | {state_key}
-
-        # Maximum depth reached
-        if depth == self.max_depth:
-            return self.evaluation(state), Directions.STOP
 
         legal_actions = state.getLegalActions(agent_index)
         next_agent = (agent_index + 1) % state.getNumAgents()
-
-        if next_agent == 0: # Pacman
-            next_depth = depth + 1
-        else:               # Ghosts
-            next_depth = depth
-
-        # Pacman's turn (MAX)
+    
+        # Pacman's turn
         if agent_index == 0:
             best_score = float("-inf")
             best_action = Directions.STOP
 
             for action in legal_actions:
-                "fonction de transition : result(s,a)"
                 successor = state.generateSuccessor(agent_index, action)
-                score, _ = self.minimax(successor, new_visited ,next_agent, alpha, beta, next_depth)
+                score, _ = self.minimax(successor, new_visited ,next_agent, alpha, beta)
 
                 if score > best_score:
                     best_score = score
                     best_action = action
-
+                
                 if best_score >= beta: 
                     return best_score, best_action
                 else :
                     alpha = max(alpha, best_score)
-                
+
             return best_score, best_action
 
-        # Ghosts turn (MIN)
+        # Ghosts turn
         else:
             best_score = float("inf")
             best_action = Directions.STOP
-            
+
             for action in legal_actions:
                 successor = state.generateSuccessor(agent_index, action)
-                score, _ = self.minimax(successor, new_visited ,next_agent, alpha, beta, next_depth)
+                score, _ = self.minimax(successor, new_visited, next_agent, alpha, beta)
 
                 if score < best_score:
                     best_score = score

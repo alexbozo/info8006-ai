@@ -12,15 +12,11 @@ def key(state):
         A hashable key tuple.
     """
 
-    return (
-        state.getPacmanPosition(),
-        state.getFood(),
-        tuple(state.getCapsules())
-    )
+    return (state.getPacmanPosition(), state.getFood(), tuple(state.getCapsules()))
 
 
 class PacmanAgent(Agent):
-    """Pacman agent based on depth-first search (DFS)."""
+    """Pacman agent based on breath-first search (BFS)."""
 
     def __init__(self):
         super().__init__()
@@ -38,14 +34,14 @@ class PacmanAgent(Agent):
         """
 
         if self.moves is None:
-            self.moves = self.dfs(state)
+            self.moves = self.bfs(state)
 
         if self.moves:
             return self.moves.pop(0)
         else:
             return Directions.STOP
 
-    def dfs(self, state):
+    def bfs(self, state):
         """Given a Pacman game state, returns a list of legal moves to solve
         the search layout.
 

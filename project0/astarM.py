@@ -2,6 +2,7 @@ from pacman_module.game import Agent, Directions
 import pacman_module.util
 from pacman_module.util import PriorityQueue
 import pacman_module.pacman
+
 def key(state):
     """Returns a key that uniquely identifies a Pacman game state.
 
