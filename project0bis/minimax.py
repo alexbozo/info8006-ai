@@ -2,7 +2,7 @@ from pacman_module.game import Agent, Directions
 import pacman_module.util
 
 class PacmanAgent(Agent):
-    """Pacman agent controlled by Minimax."""
+    """Pacman agent based on Minimax."""
 
     def __init__(self):
         super().__init__()
@@ -14,10 +14,10 @@ class PacmanAgent(Agent):
         Returns:
             A legal move as defined in `game.Directions`.
         """
-        _, action = self.minimax(state, set(), 0, float('-inf'), float('inf'))
+        _, action = self.minimax(state, set(), 0, float('-inf'), float('inf'), 0)
         return action
     
-    def minimax(self, state, path_visited, agent_index, alpha, beta):
+    def minimax(self, state, path_visited, agent_index, alpha, beta, depth):
         """Minimax algorithm for Pacman.
 
         Arguments:
@@ -31,58 +31,66 @@ class PacmanAgent(Agent):
         """
         
         # Base case
-        if state.isWin() or state.isLose():
-            return state.getScore(), Directions.STOP
-        
+        if state.isWin():
+            return 10000 - depth, Directions.STOP
+        if state.isLose():
+            return -10000 + depth, Directions.STOP
+
         state_key = (
             state.getPacmanPosition(),
             state.getFood(),
-            tuple(state.getGhostPositions())
+            tuple(state.getGhostPositions()),
         )
         if state_key in path_visited:
-            return state.getScore(), Directions.STOP
-    
-        new_visited = path_visited | {state_key}
+            return -10000 + depth, Directions.STOP
 
-        legal_actions = state.getLegalActions(agent_index)
+        new_visited = path_visited | {state_key}
         next_agent = (agent_index + 1) % state.getNumAgents()
-    
-        # Pacman's turn
+        if next_agent == 0:
+            next_depth = depth + 1
+        else:
+            next_depth = depth
+
+        # Pacman's turn (MAX)
         if agent_index == 0:
+            successors = state.generatePacmanSuccessors()
+            if not successors:
+                return -10000 + depth, Directions.STOP
+            
             best_score = float("-inf")
             best_action = Directions.STOP
 
-            for action in legal_actions:
-                successor = state.generateSuccessor(agent_index, action)
-                score, _ = self.minimax(successor, new_visited ,next_agent, alpha, beta)
-
+            for successor, action in successors:
+                score, _ = self.minimax(successor, new_visited, next_agent, alpha, beta, next_depth)
                 if score > best_score:
                     best_score = score
                     best_action = action
-                
+
                 if best_score >= beta: 
                     return best_score, best_action
-                else :
+                else:
                     alpha = max(alpha, best_score)
-
+                
             return best_score, best_action
 
-        # Ghosts turn
+        # Ghosts turn (MIN)
         else:
+            successors = state.generateGhostSuccessors(agent_index)
+            if not successors:
+                return 10000 - depth, Directions.STOP
+            
             best_score = float("inf")
             best_action = Directions.STOP
-
-            for action in legal_actions:
-                successor = state.generateSuccessor(agent_index, action)
-                score, _ = self.minimax(successor, new_visited, next_agent, alpha, beta)
-
+            
+            for successor, action in successors:
+                score, _ = self.minimax(successor, new_visited, next_agent, alpha, beta, next_depth)
                 if score < best_score:
                     best_score = score
                     best_action = action
-                    
-                if best_score <= alpha:
+            
+                if best_score <= alpha: 
                     return best_score, best_action
-                else :
+                else:
                     beta = min(beta, best_score)
 
             return best_score, best_action
