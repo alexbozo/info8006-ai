@@ -20,6 +20,7 @@ def key(state):
         tuple(state.getCapsules())
     )
 
+
 def heuristic(state):
     """Returns the distance between Pacman and the farthest food
         using the Manhattan Distance.

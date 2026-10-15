@@ -13,9 +13,9 @@ def key(state):
     """
 
     return (state.getPacmanPosition(),
-        state.getFood(),
-        tuple(state.getCapsules())
-    )
+            state.getFood(),
+            tuple(state.getCapsules())
+            )
 
 
 class PacmanAgent(Agent):
