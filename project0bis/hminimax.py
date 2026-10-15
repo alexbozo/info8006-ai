@@ -1,6 +1,7 @@
 from pacman_module.game import Agent, Directions
 import pacman_module.util
 
+
 class PacmanAgent(Agent):
     """Pacman agent based on H-Minimax."""
 
@@ -43,7 +44,7 @@ class PacmanAgent(Agent):
         if self.dist is None:
             self._init_dist(state)
         _, action = self.minimax(state, 0, float('-inf'), float('inf'), 0) 
-        
+
         return action
 
     def evaluation(self, state, depth):
@@ -51,7 +52,7 @@ class PacmanAgent(Agent):
             return 10000 - depth
         if state.isLose():
             return -10000 + depth
-            
+ 
         score = state.getScore()
         food_list = state.getFood().asList()
         pacman_position = state.getPacmanPosition()
@@ -68,7 +69,7 @@ class PacmanAgent(Agent):
             score -= 500
         elif min_ghost_dist == 2:
             score -= 50
-        
+
         food_distances = []
 
         if food_list:
@@ -77,7 +78,7 @@ class PacmanAgent(Agent):
                 food_distances.append(distance)
             score -= min(food_distances) * 2
             score -= len(food_list) * 20
-        
+
         return score
 
     def minimax(self, state, agent_index, alpha, beta, depth):
@@ -86,10 +87,12 @@ class PacmanAgent(Agent):
         Arguments:
             state: a game state. See API or class `pacman.GameState`.
             depth: current depth in the game tree.
-            agent_index: index of the current agent (0 for Pacman, >0 for Ghosts).
+            agent_index: index of the current agent (0 for Pacman, >0
+            for Ghosts).
 
         Returns:
-            A tuple (score, action) where score is the minimax score and action is the
+            A tuple (score, action) where score is the minimax score and
+            action is the
             best action for Pacman to take at this state.
         """
 
@@ -114,12 +117,18 @@ class PacmanAgent(Agent):
             successors = state.generatePacmanSuccessors()
             if not successors:
                 return self.evaluation(state, depth), Directions.STOP
-            
+
             best_score = float("-inf")
             best_action = Directions.STOP
 
             for successor, action in successors:
-                score, _ = self.minimax(successor, next_agent, alpha, beta, next_depth)
+                score, _ = self.minimax(
+                                        successor,
+                                        next_agent,
+                                        alpha,
+                                        beta,
+                                        next_depth
+                                        )
                 if score > best_score:
                     best_score = score
                     best_action = action
@@ -128,7 +137,7 @@ class PacmanAgent(Agent):
                     return best_score, best_action
                 else:
                     alpha = max(alpha, best_score)
-                
+
             return best_score, best_action
 
         # Ghosts turn (MIN)
@@ -136,16 +145,22 @@ class PacmanAgent(Agent):
             successors = state.generateGhostSuccessors(agent_index)
             if not successors:
                 return self.evaluation(state, depth), Directions.STOP
-            
+
             best_score = float("inf")
             best_action = Directions.STOP
-            
+
             for successor, action in successors:
-                score, _ = self.minimax(successor, next_agent, alpha, beta, next_depth)
+                score, _ = self.minimax(
+                                        successor,
+                                        next_agent,
+                                        alpha,
+                                        beta,
+                                        next_depth
+                                        )
                 if score < best_score:
                     best_score = score
                     best_action = action
-            
+
                 if best_score <= alpha: 
                     return best_score, best_action
                 else:
