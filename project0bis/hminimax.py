@@ -43,7 +43,7 @@ class PacmanAgent(Agent):
         """
         if self.dist is None:
             self._init_dist(state)
-        _, action = self.minimax(state, 0, float('-inf'), float('inf'), 0) 
+        _, action = self.minimax(state, 0, float('-inf'), float('inf'), 0)
 
         return action
 
@@ -52,7 +52,7 @@ class PacmanAgent(Agent):
             return 10000 - depth
         if state.isLose():
             return -10000 + depth
- 
+
         score = state.getScore()
         food_list = state.getFood().asList()
         pacman_position = state.getPacmanPosition()
@@ -73,7 +73,7 @@ class PacmanAgent(Agent):
         food_distances = []
 
         if food_list:
-            for f in food_list : 
+            for f in food_list:
                 distance = self.maze_dist(pacman_position, f)
                 food_distances.append(distance)
             score -= min(food_distances) * 2
@@ -133,7 +133,7 @@ class PacmanAgent(Agent):
                     best_score = score
                     best_action = action
 
-                if best_score >= beta: 
+                if best_score >= beta:
                     return best_score, best_action
                 else:
                     alpha = max(alpha, best_score)
@@ -161,7 +161,7 @@ class PacmanAgent(Agent):
                     best_score = score
                     best_action = action
 
-                if best_score <= alpha: 
+                if best_score <= alpha:
                     return best_score, best_action
                 else:
                     beta = min(beta, best_score)

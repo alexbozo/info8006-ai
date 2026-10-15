@@ -39,7 +39,7 @@ class PacmanAgent(Agent):
             action is the
             best action for Pacman to take at this state.
         """
-        
+
         # Base case
         if state.isWin():
             return 10000 - depth, Directions.STOP
@@ -66,7 +66,7 @@ class PacmanAgent(Agent):
             successors = state.generatePacmanSuccessors()
             if not successors:
                 return -10000 + depth, Directions.STOP
-            
+
             best_score = float("-inf")
             best_action = Directions.STOP
 
@@ -87,7 +87,7 @@ class PacmanAgent(Agent):
                     return best_score, best_action
                 else:
                     alpha = max(alpha, best_score)
-                
+
             return best_score, best_action
 
         # Ghosts turn (MIN)
@@ -95,10 +95,10 @@ class PacmanAgent(Agent):
             successors = state.generateGhostSuccessors(agent_index)
             if not successors:
                 return 10000 - depth, Directions.STOP
-            
+
             best_score = float("inf")
             best_action = Directions.STOP
-            
+
             for successor, action in successors:
                 score, _ = self.minimax(
                                         successor,
@@ -111,7 +111,7 @@ class PacmanAgent(Agent):
                 if score < best_score:
                     best_score = score
                     best_action = action
-            
+
                 if best_score <= alpha:
                     return best_score, best_action
                 else:
