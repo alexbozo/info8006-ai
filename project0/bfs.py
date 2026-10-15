@@ -12,7 +12,10 @@ def key(state):
         A hashable key tuple.
     """
 
-    return (state.getPacmanPosition(), state.getFood(), tuple(state.getCapsules()))
+    return (state.getPacmanPosition(),
+        state.getFood(),
+        tuple(state.getCapsules())
+    )
 
 
 class PacmanAgent(Agent):
