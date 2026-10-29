@@ -95,7 +95,7 @@ class PacmanAgent(Agent):
         start_f_cost = start_g_cost + heuristic(state)
 
         fringe.push((state, [], start_g_cost), start_f_cost)
-        closed = set()
+        best_g_cost = {key(state): start_g_cost}
 
         # Looping and popping
         while True:
@@ -106,28 +106,33 @@ class PacmanAgent(Agent):
             # remove the state with the lowest f_cost
             f_cost, (currentState, path, g_cost) = fringe.pop()
 
+            current_key = key(currentState)
+            if g_cost > best_g_cost[current_key]:
+                continue
+
             # Win (if Pacman has eaten all food and capsules)
             if currentState.isWin():
                 return path
 
-            # Already visited ?
-            current_key = key(currentState)
-            if current_key in closed:
-                continue
-
-            # Add to the visited set
-            closed.add(current_key)
-
             # Loop on all the possible next states and their
             # respective actions from the current state
             for successor, action in currentState.generatePacmanSuccessors():
-                new_g_cost = g_cost + 1
+                capsule_penalty = (
+                    5
+                    if len(successor.getCapsules())
+                    < len(currentState.getCapsules())
+                    else 0
+                )
+                new_g_cost = g_cost + 1 + capsule_penalty
                 new_f_cost = new_g_cost + heuristic(successor)
+                successor_key = key(successor)
 
                 # Add the successors to the fringe. It will be the pop()
                 # that will choose which of the successors is better and
                 # where to explore then.
-                fringe.push(
-                    (successor, path + [action], new_g_cost),
-                    new_f_cost
-                )
+                if new_g_cost < best_g_cost.get(successor_key, float('inf')):
+                    best_g_cost[successor_key] = new_g_cost
+                    fringe.push(
+                        (successor, path + [action], new_g_cost),
+                        new_f_cost
+                    )
