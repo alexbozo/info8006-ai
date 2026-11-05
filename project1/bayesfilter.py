@@ -31,8 +31,52 @@ class BeliefStateAgent(Agent):
             of T_t is the probability P(X_t = (k, l) | X_{t-1} = (i, j)) for
             the ghost to move from (i, j) to (k, l).
         """
+        # Variables initialization
+        t_matrix = np.zeros((walls.width, walls.height, walls.width, walls.height))
+        moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        fear_values = {
+            "fearless": 0.0,
+            "afraid": 1.0,
+            "terrified": 3.0
+        }
+        fear = fear_values.get(self.ghost, 1.0)
+        weight_away = 2.0 ** fear
 
-        pass
+        # Build the transition matrix for each position in the grid
+        for i in range(walls.width):
+            for j in range(walls.height):
+                if walls[i][j]:
+                    continue
+
+                current_distance = manhattanDistance((i, j), position)
+
+                # Find all accessible positions from the current position
+                legal_moves = []
+                for move in moves:
+                    (x, y) = i + move[0], j + move[1]
+                    if 0 <= x < walls.width and 0 <= y < walls.height and not walls[x][y]:
+                        legal_moves.append((x, y))
+
+                if not legal_moves:
+                    continue
+
+                # Compute the weights for each accessible position
+                weights = []
+                for (x, y) in legal_moves:
+                    succ_dist = manhattanDistance((x, y), position)
+                    if succ_dist >= current_distance:
+                        w = weight_away
+                    else:
+                        w = 1.0
+                    weights.append(w)
+
+                # Normalize the weights for each accessible position to get a probability distribution
+                total_weight = sum(weights)
+                for (x, y), w in zip(legal_moves, weights):
+                    t_matrix[i, j, x, y] = w / total_weight
+
+        return t_matrix
+
 
     def observation_matrix(self, walls, evidence, position):
         """Builds the observation matrix
