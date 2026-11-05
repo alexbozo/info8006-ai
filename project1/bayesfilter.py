@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 from pacman_module.game import Agent, Directions, manhattanDistance
 
@@ -94,9 +95,24 @@ class BeliefStateAgent(Agent):
         Returns:
             The W x H observation matrix O_t.
         """
-
-        pass
-
+        
+        o_matrix = np.zeros((walls.width, walls.height))
+        
+        for i in range(walls.width):
+            for j in range(walls.height):
+                if not walls[i][j]:
+                    true_distance = manhattanDistance((i, j), position)
+                    n = 4
+                    p = 0.5
+                    z = evidence - true_distance + (n * p)
+                    
+                    if not z.is_integer() or n < z or z < 0:
+                        continue
+                    else: 
+                        o_matrix[i, j] = math.comb(n, int(z)) * (p ** z) * ((1-p) ** (n-z))
+                                    
+        return o_matrix
+                        
     def update(self, walls, belief, evidence, position):
         """Updates the previous ghost belief state
 
@@ -117,7 +133,6 @@ class BeliefStateAgent(Agent):
 
         T = self.transition_matrix(walls, position)
         O = self.observation_matrix(walls, evidence, position)
-
         pass
 
     def get_action(self, state):
