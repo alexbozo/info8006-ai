@@ -98,9 +98,9 @@ class BeliefStateAgent(Agent):
         Returns:
             The W x H observation matrix O_t.
         """
-        
+
         o_matrix = np.zeros((walls.width, walls.height))
-        
+
         for i in range(walls.width):
             for j in range(walls.height):
                 if not walls[i][j]:
@@ -108,14 +108,17 @@ class BeliefStateAgent(Agent):
                     n = 4
                     p = 0.5
                     z = evidence - true_distance + (n * p)
-                    
+
                     if not z.is_integer() or n < z or z < 0:
                         continue
-                    else: 
-                        o_matrix[i, j] = math.comb(n, int(z)) * (p ** z) * ((1-p) ** (n-z))
-                                    
+                    else:
+                        bin_coeff = math.comb(n, int(z))
+                        o_matrix[i, j] = (
+                            bin_coeff * (p ** z) * ((1-p) ** (n-z))
+                        )
+
         return o_matrix
-                        
+
     def update(self, walls, belief, evidence, position):
         """Updates the previous ghost belief state
 
@@ -136,7 +139,7 @@ class BeliefStateAgent(Agent):
 
         T = self.transition_matrix(walls, position)
         O = self.observation_matrix(walls, evidence, position)
-        
+
         predicted_belief = np.einsum('ijxy,ij->xy', T, belief)
         updated_belief = O * predicted_belief
         Z = np.sum(updated_belief)
@@ -144,7 +147,7 @@ class BeliefStateAgent(Agent):
             updated_belief /= Z
 
         return updated_belief
-        
+
     def get_action(self, state):
         """Updates the previous belief states given the current state.
 
