@@ -40,8 +40,8 @@ class BeliefStateAgent(Agent):
                              width, height))
         moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
         fear_values = {
-            "fearless": 0.0,
             "afraid": 1.0,
+            "fearless": 0.0,
             "terrified": 3.0
         }
         fear = fear_values.get(self.ghost, 1.0)
