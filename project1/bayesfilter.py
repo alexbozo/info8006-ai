@@ -136,8 +136,15 @@ class BeliefStateAgent(Agent):
 
         T = self.transition_matrix(walls, position)
         O = self.observation_matrix(walls, evidence, position)
-        pass
+        
+        predicted_belief = np.einsum('ijxy,ij->xy', T, belief)
+        updated_belief = O * predicted_belief
+        Z = np.sum(updated_belief)
+        if Z > 0:
+            updated_belief /= Z
 
+        return updated_belief
+        
     def get_action(self, state):
         """Updates the previous belief states given the current state.
 
