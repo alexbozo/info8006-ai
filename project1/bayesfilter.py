@@ -137,14 +137,14 @@ class BeliefStateAgent(Agent):
             The updated ghost belief state b_t as a W x H matrix.
         """
 
-        T = self.transition_matrix(walls, position)
-        O = self.observation_matrix(walls, evidence, position)
+        T_matrix = self.transition_matrix(walls, position)
+        O_matrix = self.observation_matrix(walls, evidence, position)
 
-        predicted_belief = np.einsum('ijxy,ij->xy', T, belief)
-        updated_belief = O * predicted_belief
-        Z = np.sum(updated_belief)
-        if Z > 0:
-            updated_belief /= Z
+        predicted_belief = np.einsum('ijxy,ij->xy', T_matrix, belief)
+        updated_belief = O_matrix * predicted_belief
+        normalizer = np.sum(updated_belief)
+        if normalizer > 0:
+            updated_belief /= normalizer
 
         return updated_belief
 
@@ -256,27 +256,29 @@ class PacmanAgent(Agent):
         """
 
         best_target = None
-        global_max_prob = -1.0
+        closest_distance = float('inf')
 
-        # Iterate over each ghost's belief state to find the most likely
-        # position of the most certain ghost
+        # Iterate over each ghost's belief state to find the closest ghost
+        # based on expected position
         for idx, belief in enumerate(beliefs):
             if eaten[idx]:
                 continue
 
-            # Find the position with the highest probability for this ghost
-            ghost_max_prob = -1.0
-            ghost_target = None
+            # Calculate expected position (weighted average)
+            expected_x = 0.0
+            expected_y = 0.0
             for i in range(walls.width):
                 for j in range(walls.height):
-                    if belief[i, j] > ghost_max_prob:
-                        ghost_max_prob = belief[i, j]
-                        ghost_target = (i, j)
+                    expected_x += i * belief[i, j]
+                    expected_y += j * belief[i, j]
 
-            # Select the ghost with the highest certainty
-            if ghost_max_prob > global_max_prob:
-                global_max_prob = ghost_max_prob
-                best_target = ghost_target
+            expected_pos = (expected_x, expected_y)
+            distance = manhattanDistance(position, expected_pos)
+
+            # Select the closest ghost
+            if distance < closest_distance:
+                closest_distance = distance
+                best_target = (int(round(expected_x)), int(round(expected_y)))
 
         # If no ghost left or no valid target found
         if best_target is None:
